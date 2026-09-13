@@ -18,9 +18,7 @@ class InstructionDecode extends MultiIOModule {
 
   val io = IO(
     new Bundle {
-      /**
-        * TODO: Your code here.
-        */
+      val instruction = Input(new Instruction)
     }
   )
 
@@ -36,14 +34,12 @@ class InstructionDecode extends MultiIOModule {
   testHarness.testUpdates     := registers.testHarness.testUpdates
 
 
-  /**
-    * TODO: Your code here.
-    */
-  registers.io.readAddress1 := 0.U
-  registers.io.readAddress2 := 0.U
+
+  registers.io.readAddress1 := io.instruction.registerRs1
+  registers.io.readAddress2 := io.instruction.registerRs2
   registers.io.writeEnable  := false.B
   registers.io.writeAddress := 0.U
   registers.io.writeData    := 0.U
 
-  decoder.instruction := 0.U.asTypeOf(new Instruction)
+  decoder.instruction := io.instruction
 }
