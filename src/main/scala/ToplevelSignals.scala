@@ -21,6 +21,7 @@ class Instruction extends Bundle(){
   def immediateUType = Cat(instruction(31, 12), 0.U(12.W)).asSInt
   def immediateJType = Cat(instruction(31), instruction(19, 12), instruction(20), instruction(30, 25), instruction(24, 21), 0.U(1.W)).asSInt
   def immediateZType = instruction(19, 15).zext
+  def immediateSHAMT = instruction(24, 20).zext
 
   def bubble(): Instruction = {
     val bubbled = Wire(new Instruction)

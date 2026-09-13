@@ -28,6 +28,10 @@ class InstructionDecode extends MultiIOModule {
       val writeEnable = Input(Bool())
       val writeAddress = Input(UInt(5.W))
       val writeData = Input(UInt(32.W))
+
+      val rs2Data = Output(UInt(32.W))
+      val memRead = Output(Bool())
+      val memWrite = Output(Bool())
     }
   )
 
@@ -35,7 +39,12 @@ class InstructionDecode extends MultiIOModule {
   val decoder   = Module(new Decoder).io
 
   val immediate = MuxLookup(decoder.immType, 0.S(32.W), 
-    Array( ImmFormat.ITYPE -> io.instruction.immediateIType,  
+    Array( 
+      ImmFormat.ITYPE -> io.instruction.immediateIType,  
+      ImmFormat.SHAMT -> io.instruction.immediateSHAMT,
+      ImmFormat.STYPE -> io.instruction.immediateSType,
+      ImmFormat.UTYPE -> io.instruction.immediateUType,
+     
   ))
 
   val op1 = registers.io.readData1
@@ -46,6 +55,10 @@ class InstructionDecode extends MultiIOModule {
   io.aluOp := decoder.ALUop
   io.regWrite := decoder.controlSignals.regWrite
   io.registerRd := io.instruction.registerRd
+
+  io.rs2Data := registers.io.readData2
+  io.memRead := decoder.controlSignals.memRead
+  io.memWrite := decoder.controlSignals.memWrite
   /**
     * Setup. You should not change this code
     */

@@ -64,19 +64,32 @@ class CPU extends MultiIOModule {
   EX.io.op1 := IDBarrier.outOp1
   EX.io.op2 := IDBarrier.outOp2
   EX.io.aluOp := IDBarrier.outALUOp
+   
+  IDBarrier.inRS2Data  := ID.io.rs2Data
+  IDBarrier.inMemRead  := ID.io.memRead
+  IDBarrier.inMemWrite := ID.io.memWrite
+
 
   //Connecting EX - BARRIER - MEM 
   EXBarrier.inALUResult := EX.io.aluResult
   EXBarrier.inRegWrite := IDBarrier.outRegWrite
   EXBarrier.inRegisterRd := IDBarrier.outRegisterRd
   MEM.io.aluResult := EXBarrier.outALUResult
+  EXBarrier.inRS2Data := IDBarrier.outRS2Data
+  EXBarrier.inMemRead := IDBarrier.outMemRead
+  EXBarrier.inMemWrite := IDBarrier.outMemWrite
 
   // Connecting MEM - BARRIER - WB
   MEMBarrier.inWriteBackData := MEM.io.writeBackData
   MEMBarrier.inRegWrite := EXBarrier.outRegWrite
   MEMBarrier.inRegisterRd := EXBarrier.outRegisterRd
+  MEMBarrier.inMemRead := EXBarrier.outMemRead
 
   ID.io.writeEnable := MEMBarrier.outRegWrite
   ID.io.writeAddress := MEMBarrier.outRegisterRd
-  ID.io.writeData := MEMBarrier.outWriteBackData
+  ID.io.writeData := Mux(MEMBarrier.outMemRead, MEM.io.dataOut, MEMBarrier.outWriteBackData)
+
+  MEM.io.rs2Data  := EXBarrier.outRS2Data
+  MEM.io.memRead  := EXBarrier.outMemRead
+  MEM.io.memWrite := EXBarrier.outMemWrite
 }
