@@ -82,3 +82,28 @@ class EXBarrier extends MultiIOModule {
   io.outRegWrite := regRegWrite
   io.outRegisterRd := regRegisterRd
 }
+
+class MEMBarrier extends MultiIOModule {
+  val io = IO(
+    new Bundle {
+      val inWriteBackData = Input(UInt(32.W))
+      val inRegWrite = Input(Bool())
+      val inRegisterRd = Input(UInt(5.W))
+      val outRegWrite = Output(Bool())
+      val outRegisterRd = Output(UInt(5.W))
+      val outWriteBackData = Output(UInt(32.W))
+    }
+  )
+
+  val regWriteBackData = RegInit(0.U(32.W))
+  val regRegWrite = RegInit(false.B)
+  val regRegisterRd = RegInit(0.U(5.W))
+
+  regWriteBackData := io.inWriteBackData
+  regRegWrite := io.inRegWrite
+  regRegisterRd := io.inRegisterRd
+
+  io.outWriteBackData := regWriteBackData
+  io.outRegWrite := regRegWrite
+  io.outRegisterRd := regRegisterRd
+}
