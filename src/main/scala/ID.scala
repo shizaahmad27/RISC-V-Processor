@@ -1,6 +1,6 @@
 package FiveStage
 import chisel3._
-import chisel3.util.{ BitPat, MuxCase }
+import chisel3.util.{ BitPat, MuxCase, MuxLookup}
 import chisel3.experimental.MultiIOModule
 
 
@@ -19,12 +19,25 @@ class InstructionDecode extends MultiIOModule {
   val io = IO(
     new Bundle {
       val instruction = Input(new Instruction)
+      val op1 = Output(UInt(32.W))
+      val op2 = Output(UInt(32.W))
+      val aluOp = Output(UInt(4.W))
     }
   )
 
   val registers = Module(new Registers)
   val decoder   = Module(new Decoder).io
 
+  val immediate = MuxLookup(decoder.immType, 0.S(32.W), 
+    Array( ImmFormat.ITYPE -> io.instruction.immediateIType,  
+  ))
+
+  val op1 = registers.io.readData1
+  val op2 = Mux(decoder.op2Select === Op2Select.imm, immediate.asUInt(), registers.io.readData2)
+
+  io.op1 := op1
+  io.op2 := op2
+  io.aluOp := decoder.ALUop
 
   /**
     * Setup. You should not change this code
@@ -34,7 +47,6 @@ class InstructionDecode extends MultiIOModule {
   testHarness.testUpdates     := registers.testHarness.testUpdates
 
 
-
   registers.io.readAddress1 := io.instruction.registerRs1
   registers.io.readAddress2 := io.instruction.registerRs2
   registers.io.writeEnable  := false.B
@@ -42,4 +54,4 @@ class InstructionDecode extends MultiIOModule {
   registers.io.writeData    := 0.U
 
   decoder.instruction := io.instruction
-}
+} 
