@@ -75,4 +75,8 @@ class CPU extends MultiIOModule {
   MEMBarrier.inWriteBackData := MEM.io.writeBackData
   MEMBarrier.inRegWrite := EXBarrier.outRegWrite
   MEMBarrier.inRegisterRd := EXBarrier.outRegisterRd
+
+  ID.io.writeEnable := MEMBarrier.outRegWrite
+  ID.io.writeAddress := MEMBarrier.outRegisterRd
+  ID.io.writeData := MEMBarrier.outWriteBackData
 }

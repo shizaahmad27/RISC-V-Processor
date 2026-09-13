@@ -24,6 +24,10 @@ class InstructionDecode extends MultiIOModule {
       val aluOp = Output(UInt(4.W))
       val regWrite =  Output(Bool())
       val registerRd = Output(UInt(5.W ))
+
+      val writeEnable = Input(Bool())
+      val writeAddress = Input(UInt(5.W))
+      val writeData = Input(UInt(32.W))
     }
   )
 
@@ -52,9 +56,9 @@ class InstructionDecode extends MultiIOModule {
 
   registers.io.readAddress1 := io.instruction.registerRs1
   registers.io.readAddress2 := io.instruction.registerRs2
-  registers.io.writeEnable  := false.B
-  registers.io.writeAddress := 0.U
-  registers.io.writeData    := 0.U
+  registers.io.writeEnable  := io.writeEnable
+  registers.io.writeAddress := io.writeAddress
+  registers.io.writeData    := io.writeData
 
   decoder.instruction := io.instruction
 } 
