@@ -71,6 +71,16 @@ class Decoder() extends Module {
     SLLI   -> List(Y,        N,       N,        N,       N,    branchType.DC, rs1,       imm,       SHAMT,        ALUOps.SLL),
     SRLI   -> List(Y,        N,       N,        N,       N,    branchType.DC, rs1,       imm,       SHAMT,        ALUOps.SRL),
     SRAI   -> List(Y,        N,       N,        N,       N,    branchType.DC, rs1,       imm,       SHAMT,        ALUOps.SRA),
+    LUI    -> List(Y,        N,       N,        N,       N,    branchType.DC, rs1,       imm,       UTYPE,        ALUOps.COPY_B),
+    AUIPC  -> List(Y,        N,       N,        N,       N,    branchType.DC, PC,       imm,       UTYPE,        ALUOps.ADD),
+    JAL    -> List(Y,        N,       N,        N,       Y,    branchType.DC, PC,       imm,       JTYPE,        ALUOps.ADD),
+    JALR   -> List(Y,        N,       N,        N,       Y,    branchType.DC, rs1,       imm,       ITYPE,        ALUOps.ADD),
+    BEQ    -> List(N,        N,       N,        Y,       N,    branchType.beq, rs1,       rs2,       BTYPE,        ALUOps.DC),
+    BNE    -> List(N,        N,       N,        Y,       N,    branchType.neq, rs1,       rs2,       BTYPE,        ALUOps.DC),
+    BLT    -> List(N,        N,       N,        Y,       N,    branchType.lt, rs1,       rs2,       BTYPE,        ALUOps.DC),
+    BGE    -> List(N,        N,       N,        Y,       N,    branchType.gte, rs1,       rs2,       BTYPE,        ALUOps.DC),
+    BLTU   -> List(N,        N,       N,        Y,       N,    branchType.ltu, rs1,       rs2,       BTYPE,        ALUOps.DC),
+    BGEU   -> List(N,        N,       N,        Y,       N,    branchType.gteu, rs1,       rs2,       BTYPE,        ALUOps.DC),
     )
 
 

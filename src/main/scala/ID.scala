@@ -32,6 +32,12 @@ class InstructionDecode extends MultiIOModule {
       val rs2Data = Output(UInt(32.W))
       val memRead = Output(Bool())
       val memWrite = Output(Bool())
+      val PC = Input(UInt(32.W))
+      val PCout = Output(UInt(32.W))
+      val immediate = Output(UInt(32.W))
+      val branchType = Output(UInt(3.W))
+      val branch = Output(Bool())
+      val jump = Output(Bool())
     }
   )
 
@@ -44,10 +50,11 @@ class InstructionDecode extends MultiIOModule {
       ImmFormat.SHAMT -> io.instruction.immediateSHAMT,
       ImmFormat.STYPE -> io.instruction.immediateSType,
       ImmFormat.UTYPE -> io.instruction.immediateUType,
-     
+      ImmFormat.JTYPE -> io.instruction.immediateJType,
+      ImmFormat.BTYPE -> io.instruction.immediateBType,
   ))
 
-  val op1 = registers.io.readData1
+  val op1 = Mux(decoder.op1Select === Op1Select.rs1, registers.io.readData1, io.PC)
   val op2 = Mux(decoder.op2Select === Op2Select.imm, immediate.asUInt(), registers.io.readData2)
 
   io.op1 := op1
@@ -59,6 +66,11 @@ class InstructionDecode extends MultiIOModule {
   io.rs2Data := registers.io.readData2
   io.memRead := decoder.controlSignals.memRead
   io.memWrite := decoder.controlSignals.memWrite
+  io.PCout := io.PC
+  io.immediate := immediate.asUInt()
+  io.branchType := decoder.branchType
+  io.branch := decoder.controlSignals.branch
+  io.jump := decoder.controlSignals.jump
   /**
     * Setup. You should not change this code
     */
