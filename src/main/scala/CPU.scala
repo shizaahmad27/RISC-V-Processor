@@ -23,7 +23,7 @@ class CPU extends MultiIOModule {
     */
    val IFBarrier  = Module(new IFBarrier).io
    val IDBarrier  = Module(new IDBarrier).io
-  // val EXBarrier  = Module(new EXBarrier).io
+   val EXBarrier  = Module(new EXBarrier).io
   // val MEMBarrier = Module(new MEMBarrier).io
 
   val ID  = Module(new InstructionDecode)
@@ -59,7 +59,15 @@ class CPU extends MultiIOModule {
   IDBarrier.inOp1 := ID.io.op1
   IDBarrier.inOp2 := ID.io.op2
   IDBarrier.inALUOp := ID.io.aluOp
+  IDBarrier.inRegWrite := ID.io.regWrite
+  IDBarrier.inRegisterRd := ID.io.registerRd
   EX.io.op1 := IDBarrier.outOp1
   EX.io.op2 := IDBarrier.outOp2
   EX.io.aluOp := IDBarrier.outALUOp
+
+  //Connecting EX - BARRIER - MEM 
+  EXBarrier.inALUResult := EX.io.aluResult
+  EXBarrier.inRegWrite := IDBarrier.outRegWrite
+  EXBarrier.inRegisterRd := IDBarrier.outRegisterRd
+  MEM.io.aluResult := EXBarrier.outALUResult
 }

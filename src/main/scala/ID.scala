@@ -22,6 +22,8 @@ class InstructionDecode extends MultiIOModule {
       val op1 = Output(UInt(32.W))
       val op2 = Output(UInt(32.W))
       val aluOp = Output(UInt(4.W))
+      val regWrite =  Output(Bool())
+      val registerRd = Output(UInt(5.W ))
     }
   )
 
@@ -38,7 +40,8 @@ class InstructionDecode extends MultiIOModule {
   io.op1 := op1
   io.op2 := op2
   io.aluOp := decoder.ALUop
-
+  io.regWrite := decoder.controlSignals.regWrite
+  io.registerRd := io.instruction.registerRd
   /**
     * Setup. You should not change this code
     */

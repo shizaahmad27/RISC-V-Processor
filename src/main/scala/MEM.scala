@@ -18,6 +18,8 @@ class MemoryFetch() extends MultiIOModule {
 
   val io = IO(
     new Bundle {
+      val aluResult = Input(UInt(32.W))
+      val writeBackData = Output(UInt(32.W))
     })
 
 
@@ -32,9 +34,9 @@ class MemoryFetch() extends MultiIOModule {
   testHarness.testUpdates := DMEM.testHarness.testUpdates
 
 
-  /**
-    * Your code here.
-    */
+
+  io.writeBackData := io.aluResult
+  
   DMEM.io.dataIn      := 0.U
   DMEM.io.dataAddress := 0.U
   DMEM.io.writeEnable := false.B
