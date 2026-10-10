@@ -60,8 +60,12 @@ class InstructionDecode extends MultiIOModule {
       ImmFormat.BTYPE -> io.instruction.immediateBType,
   ))
 
-  val op1 = Mux(decoder.op1Select === Op1Select.rs1, registers.io.readData1, io.PC)
-  val op2 = Mux(decoder.op2Select === Op2Select.imm, immediate.asUInt(), registers.io.readData2)
+
+  val rs1Value = Mux(io.writeEnable && io.writeAddress === io.instruction.registerRs1 && io.writeAddress =/= 0.U, io.writeData, registers.io.readData1)
+  val rs2Value = Mux(io.writeEnable && io.writeAddress === io.instruction.registerRs2 && io.writeAddress =/= 0.U, io.writeData, registers.io.readData2)
+
+  val op1 = Mux(decoder.op1Select === Op1Select.rs1, rs1Value, io.PC)
+  val op2 = Mux(decoder.op2Select === Op2Select.imm, immediate.asUInt(), rs2Value)
 
   io.op1 := op1
   io.op2 := op2
@@ -69,7 +73,7 @@ class InstructionDecode extends MultiIOModule {
   io.regWrite := decoder.controlSignals.regWrite
   io.registerRd := io.instruction.registerRd
 
-  io.rs2Data := registers.io.readData2
+  io.rs2Data := rs2Value
   io.memRead := decoder.controlSignals.memRead
   io.memWrite := decoder.controlSignals.memWrite
   io.PCout := io.PC
@@ -86,7 +90,7 @@ class InstructionDecode extends MultiIOModule {
 
   /**
     * Setup. You should not change this code
-    */
+  */
   registers.testHarness.setup := testHarness.registerSetup
   testHarness.registerPeek    := registers.io.readData1
   testHarness.testUpdates     := registers.testHarness.testUpdates
