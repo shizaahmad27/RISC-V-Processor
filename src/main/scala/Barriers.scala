@@ -9,12 +9,15 @@ class IFBarrier extends MultiIOModule {
       val outInstruction = Output(new Instruction)
       val outPC = Output(UInt(32.W))
       val inPC = Input(UInt(32.W))
+      val stall = Input(Bool())
     }
   )
 
   val reg = RegInit(0.U(32.W))
   // Having the registers as a barrier between here will give one cycle delay
-  reg := io.inPC
+  when(!io.stall){
+    reg := io.inPC
+  }
   io.outPC := reg
 
   io.outInstruction :=  io.inInstruction
@@ -62,6 +65,8 @@ class IDBarrier extends MultiIOModule {
       val outOp1IsRegister = Output(Bool())
       val inOp2IsRegister = Input(Bool())
       val outOp2IsRegister = Output(Bool())
+
+      val stall = Input(Bool())
     }
   )
 
@@ -123,6 +128,15 @@ class IDBarrier extends MultiIOModule {
  io.outOp2IsRegister := regOp2IsRegister
  regOp1IsRegister := io.inOp1IsRegister
  regOp2IsRegister := io.inOp2IsRegister
+
+ // Load-use stall: insert a bubble into EX
+ when(io.stall){
+   regRegWrite := false.B
+   regMemRead := false.B
+   regMemWrite := false.B
+   regBranch := false.B
+   regJump := false.B
+ }
 }
 
 class EXBarrier extends MultiIOModule {

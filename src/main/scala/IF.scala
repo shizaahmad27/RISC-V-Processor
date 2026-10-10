@@ -19,6 +19,7 @@ class InstructionFetch extends MultiIOModule {
       val instruction = Output(new Instruction)
       val branchTaken = Input(Bool())
       val branchTarget = Input(UInt(32.W))
+      val stall = Input(Bool())
     })
 
   val IMEM = Module(new IMEM)
@@ -34,9 +35,12 @@ class InstructionFetch extends MultiIOModule {
 
 
   io.PC := PC
-  IMEM.io.instructionAddress := PC
+  // On a stall the instruction in ID must be fetched again, since PC already points past it
+  IMEM.io.instructionAddress := Mux(io.stall, PC - 4.U, PC)
 
-  when(io.branchTaken){
+  when(io.stall){
+    PC := PC
+  }.elsewhen(io.branchTaken){
     PC := io.branchTarget
   }.otherwise {
     PC := PC + 4.U

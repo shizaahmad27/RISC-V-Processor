@@ -32,6 +32,8 @@ class CPU extends MultiIOModule {
   val MEM = Module(new MemoryFetch)
   // val WB  = Module(new Execute) (You may not need this one?)
 
+  val stall = Wire(Bool())
+  stall := IDBarrier.outMemRead && IDBarrier.outRegisterRd =/= 0.U && (IDBarrier.outRegisterRd === ID.io.instruction.registerRs1 || IDBarrier.outRegisterRd === ID.io.instruction.registerRs2)
 
   /**
     * Setup. You should not change this code
@@ -127,4 +129,8 @@ class CPU extends MultiIOModule {
   EX.io.op2IsRegister := IDBarrier.outOp2IsRegister
 
   EX.io.rs2Data := IDBarrier.outRS2Data
+
+  IF.io.stall := stall
+  IFBarrier.stall := stall
+  IDBarrier.stall := stall
 }
