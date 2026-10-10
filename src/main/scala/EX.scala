@@ -34,11 +34,16 @@ class Execute extends MultiIOModule {
             val rs2 = Input(UInt(5.W))
             val op1IsRegister = Input(Bool())
             val op2IsRegister = Input(Bool())
+
+            val rs2Data = Input(UInt(32.W))
+            val rs2DataOutput = Output(UInt(32.W))
         }
     )
 
     val forwardedop1 = Mux(io.op1IsRegister, Mux(io.memRegWrite && io.memRd === io.rs1 && io.memRd =/= 0.U, io.memAluResult, Mux(io.wbRegWrite && io.wbRegRd === io.rs1 && io.wbRegRd =/= 0.U, io.wbData, io.op1)), io.op1)
     val forwardedop2 = Mux(io.op2IsRegister, Mux(io.memRegWrite && io.memRd === io.rs2 && io.memRd =/= 0.U, io.memAluResult, Mux(io.wbRegWrite && io.wbRegRd === io.rs2 && io.wbRegRd =/= 0.U, io.wbData, io.op2)), io.op2)
+
+    val forwardedRs2Data = Mux(io.memRegWrite && io.memRd === io.rs2 && io.memRd =/= 0.U, io.memAluResult, Mux(io.wbRegWrite && io.wbRegRd === io.rs2 && io.wbRegRd =/= 0.U, io.wbData, io.rs2Data))
 
     val alu = Module(new ALU).io
     alu.op1 := forwardedop1
@@ -53,9 +58,8 @@ class Execute extends MultiIOModule {
         branchType.gteu -> (forwardedop1 >= forwardedop2),
     ))
 
-   
-
     io.branchTaken  := io.jump || (io.branch && comparison)
     io.branchTarget := Mux(io.branch, io.PCout + io.immediate, alu.aluResult)
     io.aluResult    := Mux(io.jump, io.PCout + 4.U, alu.aluResult)
+    io.rs2DataOutput := forwardedRs2Data
 }

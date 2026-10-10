@@ -90,7 +90,7 @@ class CPU extends MultiIOModule {
   EXBarrier.inRegWrite := IDBarrier.outRegWrite
   EXBarrier.inRegisterRd := IDBarrier.outRegisterRd
   MEM.io.aluResult := EXBarrier.outALUResult
-  EXBarrier.inRS2Data := IDBarrier.outRS2Data
+  EXBarrier.inRS2Data := EX.io.rs2DataOutput
   EXBarrier.inMemRead := IDBarrier.outMemRead
   EXBarrier.inMemWrite := IDBarrier.outMemWrite
 
@@ -125,4 +125,6 @@ class CPU extends MultiIOModule {
   IDBarrier.inOp2IsRegister := ID.io.op2IsRegister
   EX.io.op1IsRegister := IDBarrier.outOp1IsRegister
   EX.io.op2IsRegister := IDBarrier.outOp2IsRegister
+
+  EX.io.rs2Data := IDBarrier.outRS2Data
 }
