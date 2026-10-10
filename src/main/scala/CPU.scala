@@ -120,4 +120,9 @@ class CPU extends MultiIOModule {
   IDBarrier.inRS2 := ID.io.rs2
   EX.io.rs1 := IDBarrier.outRS1
   EX.io.rs2 := IDBarrier.outRS2
+
+  IDBarrier.inOp1IsRegister := ID.io.op1IsRegister
+  IDBarrier.inOp2IsRegister := ID.io.op2IsRegister
+  EX.io.op1IsRegister := IDBarrier.outOp1IsRegister
+  EX.io.op2IsRegister := IDBarrier.outOp2IsRegister
 }

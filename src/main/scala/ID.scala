@@ -41,6 +41,9 @@ class InstructionDecode extends MultiIOModule {
 
       val rs1 = Output(UInt(5.W))
       val rs2 = Output(UInt(5.W))
+
+      val op1IsRegister = Output(Bool())
+      val op2IsRegister = Output(Bool())
     }
   )
 
@@ -77,7 +80,10 @@ class InstructionDecode extends MultiIOModule {
 
   io.rs1 := io.instruction.registerRs1
   io.rs2 := io.instruction.registerRs2
-  
+
+  io.op1IsRegister := decoder.op1Select === Op1Select.rs1
+  io.op2IsRegister := decoder.op2Select === Op2Select.rs2
+
   /**
     * Setup. You should not change this code
     */

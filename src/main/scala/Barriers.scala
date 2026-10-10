@@ -58,6 +58,10 @@ class IDBarrier extends MultiIOModule {
 
       val inRS2 = Input(UInt(5.W))
       val outRS2 = Output(UInt(5.W))
+      val inOp1IsRegister = Input(Bool())
+      val outOp1IsRegister = Output(Bool())
+      val inOp2IsRegister = Input(Bool())
+      val outOp2IsRegister = Output(Bool())
     }
   )
 
@@ -72,7 +76,8 @@ class IDBarrier extends MultiIOModule {
  val regMemRead = RegInit(false.B)
  val regMemWrite = RegInit(false.B)
 
-
+ val regOp1IsRegister = RegInit(false.B)
+ val regOp2IsRegister = RegInit(false.B)
  regOp1 := io.inOp1
  regOp2 := io.inOp2
  regALUOp := io.inALUOp
@@ -114,7 +119,10 @@ class IDBarrier extends MultiIOModule {
  io.outRS1 := regRS1
  io.outRS2 := regRS2
  io.outRS2Data := regRS2Data
-
+ io.outOp1IsRegister := regOp1IsRegister
+ io.outOp2IsRegister := regOp2IsRegister
+ regOp1IsRegister := io.inOp1IsRegister
+ regOp2IsRegister := io.inOp2IsRegister
 }
 
 class EXBarrier extends MultiIOModule {

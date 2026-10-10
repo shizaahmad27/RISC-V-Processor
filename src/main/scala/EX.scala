@@ -32,6 +32,8 @@ class Execute extends MultiIOModule {
 
             val rs1 = Input(UInt(5.W))
             val rs2 = Input(UInt(5.W))
+            val op1IsRegister = Input(Bool())
+            val op2IsRegister = Input(Bool())
         }
     )
 
