@@ -38,6 +38,9 @@ class InstructionDecode extends MultiIOModule {
       val branchType = Output(UInt(3.W))
       val branch = Output(Bool())
       val jump = Output(Bool())
+
+      val rs1 = Output(UInt(5.W))
+      val rs2 = Output(UInt(5.W))
     }
   )
 
@@ -71,6 +74,10 @@ class InstructionDecode extends MultiIOModule {
   io.branchType := decoder.branchType
   io.branch := decoder.controlSignals.branch
   io.jump := decoder.controlSignals.jump
+
+  io.rs1 := io.instruction.registerRs1
+  io.rs2 := io.instruction.registerRs2
+  
   /**
     * Setup. You should not change this code
     */

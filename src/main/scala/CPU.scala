@@ -107,4 +107,17 @@ class CPU extends MultiIOModule {
   MEM.io.rs2Data  := EXBarrier.outRS2Data
   MEM.io.memRead  := EXBarrier.outMemRead
   MEM.io.memWrite := EXBarrier.outMemWrite
+
+  // Milestone 3 Connecting
+  EX.io.memAluResult := MEM.io.aluResult
+  EX.io.memRegWrite := EXBarrier.outRegWrite
+  EX.io.memRd       := EXBarrier.outRegisterRd
+  EX.io.wbData := Mux(MEMBarrier.outMemRead, MEM.io.dataOut, MEMBarrier.outWriteBackData)
+  EX.io.wbRegWrite := MEMBarrier.outRegWrite
+  EX.io.wbRegRd := MEMBarrier.outRegisterRd
+
+  IDBarrier.inRS1 := ID.io.rs1
+  IDBarrier.inRS2 := ID.io.rs2
+  EX.io.rs1 := IDBarrier.outRS1
+  EX.io.rs2 := IDBarrier.outRS2
 }

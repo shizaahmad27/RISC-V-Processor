@@ -19,6 +19,19 @@ class Execute extends MultiIOModule {
 
             val branchTaken = Output(Bool())
             val branchTarget = Output(UInt(32.W))
+
+            // Milestone 3. Needed for MEM stage forwarding
+
+            val memAluResult = Input(UInt(32.W))
+            val memRegWrite = Input(Bool())
+            val memRd = Input(UInt(5.W))
+
+            val wbData = Input(UInt(32.W))
+            val wbRegWrite = Input(Bool())
+            val wbRegRd = Input(UInt(5.W))
+
+            val rs1 = Input(UInt(5.W))
+            val rs2 = Input(UInt(5.W))
         }
     )
 
