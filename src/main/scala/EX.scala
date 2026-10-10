@@ -37,18 +37,23 @@ class Execute extends MultiIOModule {
         }
     )
 
+    val forwardedop1 = Mux(io.op1IsRegister, Mux(io.memRegWrite && io.memRd === io.rs1 && io.memRd =/= 0.U, io.memAluResult, Mux(io.wbRegWrite && io.wbRegRd === io.rs1 && io.wbRegRd =/= 0.U, io.wbData, io.op1)), io.op1)
+    val forwardedop2 = Mux(io.op2IsRegister, Mux(io.memRegWrite && io.memRd === io.rs2 && io.memRd =/= 0.U, io.memAluResult, Mux(io.wbRegWrite && io.wbRegRd === io.rs2 && io.wbRegRd =/= 0.U, io.wbData, io.op2)), io.op2)
+
     val alu = Module(new ALU).io
-    alu.op1 := io.op1
-    alu.op2 := io.op2
+    alu.op1 := forwardedop1
+    alu.op2 := forwardedop2
     alu.aluOp := io.aluOp
     val comparison = MuxLookup(io.branchType, false.B, Array(
-        branchType.beq  -> (io.op1 === io.op2),
-        branchType.neq  -> (io.op1 =/= io.op2),
-        branchType.lt   -> (io.op1.asSInt < io.op2.asSInt),
-        branchType.gte  -> (io.op1.asSInt >= io.op2.asSInt),
-        branchType.ltu  -> (io.op1 < io.op2),
-        branchType.gteu -> (io.op1 >= io.op2),
+        branchType.beq  -> (forwardedop1 === forwardedop2),
+        branchType.neq  -> (forwardedop1 =/= forwardedop2),
+        branchType.lt   -> (forwardedop1.asSInt < forwardedop2.asSInt),
+        branchType.gte  -> (forwardedop1.asSInt >= forwardedop2.asSInt),
+        branchType.ltu  -> (forwardedop1 < forwardedop2),
+        branchType.gteu -> (forwardedop1 >= forwardedop2),
     ))
+
+   
 
     io.branchTaken  := io.jump || (io.branch && comparison)
     io.branchTarget := Mux(io.branch, io.PCout + io.immediate, alu.aluResult)
