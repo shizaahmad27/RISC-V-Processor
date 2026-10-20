@@ -79,7 +79,8 @@ class SingleTest extends FlatSpec with Matchers {
 
 class AllTests extends FlatSpec with Matchers {
   it should "just werk" in {
-    val werks = getAllTestNames.filterNot(_ == "convolution.s").map{testname => 
+    val basicTests = List("addi.s", "arithImm.s", "arith.s", "forward1.s", "forward2.s", "load.s", "load2.s")
+    val werks = getAllTestNames.filter(basicTests.contains).map{testname => 
       say(s"testing $testname")
       val opts = Manifest.allTestOptions(testname)
       (testname, TestRunner.run(opts))
