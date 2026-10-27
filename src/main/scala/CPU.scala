@@ -35,6 +35,10 @@ class CPU extends MultiIOModule {
   val stall = Wire(Bool())
   stall := IDBarrier.outMemRead && IDBarrier.outRegisterRd =/= 0.U && (IDBarrier.outRegisterRd === ID.io.instruction.registerRs1 || IDBarrier.outRegisterRd === ID.io.instruction.registerRs2)
 
+  //Flush wire 
+  val flush = Wire(Bool())
+  flush := EX.io.branchTaken 
+
   /**
     * Setup. You should not change this code
     */
@@ -133,4 +137,8 @@ class CPU extends MultiIOModule {
   IF.io.stall := stall
   IFBarrier.stall := stall
   IDBarrier.stall := stall
+
+  IDBarrier.flush := flush
+  
+
 }

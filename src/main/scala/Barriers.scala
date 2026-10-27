@@ -67,7 +67,10 @@ class IDBarrier extends MultiIOModule {
       val outOp2IsRegister = Output(Bool())
 
       val stall = Input(Bool())
+
+      val flush = Input(Bool())
     }
+
   )
 
  val regOp1 = RegInit(0.U(32.W))
@@ -106,8 +109,10 @@ class IDBarrier extends MultiIOModule {
  val regBranchType = RegInit(0.U(3.W))
  val regImmediate = RegInit(0.U(32.W))
  val regPCout = RegInit(0.U(32.W))
+ val regFlushDelayed = RegInit(false.B)
 
  regBranch := io.inBranch
+ regFlushDelayed := io.flush
  regJump := io.inJump
  regBranchType := io.inBranchType
  regImmediate := io.inImmediate
@@ -137,6 +142,19 @@ class IDBarrier extends MultiIOModule {
    regBranch := false.B
    regJump := false.B
  }
+ 
+  when(io.flush || regFlushDelayed){
+      regOp1 := 0.U
+      regOp2 := 0.U
+      regALUOp := 0.U
+      regRegWrite := false.B
+      regRegisterRd := 0.U
+      regRS2Data := 0.U
+      regMemWrite := false.B
+      regMemRead := false.B
+      regBranch := false.B
+      regJump := false.B
+    }
 }
 
 class EXBarrier extends MultiIOModule {
