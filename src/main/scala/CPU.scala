@@ -32,12 +32,23 @@ class CPU extends MultiIOModule {
   val MEM = Module(new MemoryFetch)
   // val WB  = Module(new Execute) (You may not need this one?)
 
-  val stall = Wire(Bool())
-  stall := IDBarrier.outMemRead && IDBarrier.outRegisterRd =/= 0.U && (IDBarrier.outRegisterRd === ID.io.instruction.registerRs1 || IDBarrier.outRegisterRd === ID.io.instruction.registerRs2)
+  val loadUseStall = IDBarrier.outMemRead && IDBarrier.outRegisterRd =/= 0.U && (IDBarrier.outRegisterRd === ID.io.instruction.registerRs1 || IDBarrier.outRegisterRd === ID.io.instruction.registerRs2)
 
-  //Flush wire 
-  val flush = Wire(Bool())
-  flush := EX.io.branchTaken 
+  // Fast branch hazards: the comparator in ID needs its operands now.
+  // A result still in EX gives 1 stall, a load in MEM gives 1 more stall.
+  val branchUsesRs1 = ID.io.branch || (ID.io.jump && ID.io.op1IsRegister)
+  val branchUsesRs2 = ID.io.branch
+  def branchDependsOn(rd: UInt): Bool =
+    rd =/= 0.U && ((branchUsesRs1 && rd === ID.io.instruction.registerRs1) || (branchUsesRs2 && rd === ID.io.instruction.registerRs2))
+  val branchStall = (IDBarrier.outRegWrite && branchDependsOn(IDBarrier.outRegisterRd)) ||
+                    (EXBarrier.outMemRead && branchDependsOn(EXBarrier.outRegisterRd))
+
+  val stall = Wire(Bool())
+  stall := loadUseStall || branchStall
+
+  // Branch is taken in ID, so only the instruction fetched after it must be flushed (turned into a NOP)
+  val branchTaken = ID.io.branchTaken && !stall
+  val flushID = RegNext(branchTaken, false.B)
 
   /**
     * Setup. You should not change this code
@@ -59,7 +70,7 @@ class CPU extends MultiIOModule {
 //Connecting IF - BARRIER - ID
   IFBarrier.inPC := IF.io.PC
   IFBarrier.inInstruction := IF.io.instruction
-  ID.io.instruction :=  IFBarrier.outInstruction
+  ID.io.instruction := Mux(flushID, Instruction.NOP, IFBarrier.outInstruction)
   ID.io.PC := IFBarrier.outPC
 
 // Connecting ID - BARRIER - EX
@@ -82,14 +93,16 @@ class CPU extends MultiIOModule {
  IDBarrier.inPCout := ID.io.PCout
  IDBarrier.inBranchType := ID.io.branchType
 
-  EX.io.branchType := IDBarrier.outBranchType
-  EX.io.branch := IDBarrier.outBranch
+  // EX still needs jump and PC to write the return address PC + 4
   EX.io.jump := IDBarrier.outJump
-  EX.io.immediate := IDBarrier.outImmediate
   EX.io.PCout := IDBarrier.outPCout
 
-  IF.io.branchTaken := EX.io.branchTaken
-  IF.io.branchTarget := EX.io.branchTarget
+  IF.io.branchTaken := branchTaken
+  IF.io.branchTarget := ID.io.branchTarget
+
+  ID.io.memAluResult := EXBarrier.outALUResult
+  ID.io.memRegWrite := EXBarrier.outRegWrite
+  ID.io.memRd := EXBarrier.outRegisterRd
 
   //Connecting EX - BARRIER - MEM 
   EXBarrier.inALUResult := EX.io.aluResult
@@ -138,7 +151,5 @@ class CPU extends MultiIOModule {
   IFBarrier.stall := stall
   IDBarrier.stall := stall
 
-  IDBarrier.flush := flush
-  
 
 }

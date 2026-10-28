@@ -44,6 +44,14 @@ class InstructionDecode extends MultiIOModule {
 
       val op1IsRegister = Output(Bool())
       val op2IsRegister = Output(Bool())
+
+      // Fast branch. Forwarding from MEM stage into the branch comparator
+      val memAluResult = Input(UInt(32.W))
+      val memRegWrite = Input(Bool())
+      val memRd = Input(UInt(5.W))
+
+      val branchTaken = Output(Bool())
+      val branchTarget = Output(UInt(32.W))
     }
   )
 
@@ -87,6 +95,28 @@ class InstructionDecode extends MultiIOModule {
 
   io.op1IsRegister := decoder.op1Select === Op1Select.rs1
   io.op2IsRegister := decoder.op2Select === Op2Select.rs2
+
+  // Fast branch: branches and jumps are resolved here in ID.
+  // rs1Value/rs2Value already bypass from WB, so only MEM forwarding is added.
+  // Values still in EX (or a load in MEM) are handled by stalling in CPU.
+  val branchRs1 = Mux(io.memRegWrite && io.memRd === io.instruction.registerRs1 && io.memRd =/= 0.U, io.memAluResult, rs1Value)
+  val branchRs2 = Mux(io.memRegWrite && io.memRd === io.instruction.registerRs2 && io.memRd =/= 0.U, io.memAluResult, rs2Value)
+
+  val comparison = MuxLookup(decoder.branchType, false.B, Array(
+    branchType.beq  -> (branchRs1 === branchRs2),
+    branchType.neq  -> (branchRs1 =/= branchRs2),
+    branchType.lt   -> (branchRs1.asSInt < branchRs2.asSInt),
+    branchType.gte  -> (branchRs1.asSInt >= branchRs2.asSInt),
+    branchType.ltu  -> (branchRs1 < branchRs2),
+    branchType.gteu -> (branchRs1 >= branchRs2),
+  ))
+
+  // JALR jumps to rs1 + imm, branches and JAL jump to PC + imm
+  val isJALR = decoder.controlSignals.jump && decoder.op1Select === Op1Select.rs1
+  val targetBase = Mux(isJALR, branchRs1, io.PC)
+
+  io.branchTaken  := decoder.controlSignals.jump || (decoder.controlSignals.branch && comparison)
+  io.branchTarget := (targetBase + immediate.asUInt()) & "hFFFFFFFE".U
 
   /**
     * Setup. You should not change this code

@@ -11,14 +11,9 @@ class Execute extends MultiIOModule {
             val aluOp = Input(UInt(4.W))
             val aluResult = Output(UInt(32.W))
 
-            val branchType = Input(UInt(3.W))
-            val branch = Input(Bool())
+            // Branches are resolved in ID (fast branch). EX only writes the return address for jumps
             val jump = Input(Bool())
-            val immediate = Input(UInt(32.W))
             val PCout = Input(UInt(32.W))
-
-            val branchTaken = Output(Bool())
-            val branchTarget = Output(UInt(32.W))
 
             // Milestone 3. Needed for MEM stage forwarding
 
@@ -49,17 +44,7 @@ class Execute extends MultiIOModule {
     alu.op1 := forwardedop1
     alu.op2 := forwardedop2
     alu.aluOp := io.aluOp
-    val comparison = MuxLookup(io.branchType, false.B, Array(
-        branchType.beq  -> (forwardedop1 === forwardedop2),
-        branchType.neq  -> (forwardedop1 =/= forwardedop2),
-        branchType.lt   -> (forwardedop1.asSInt < forwardedop2.asSInt),
-        branchType.gte  -> (forwardedop1.asSInt >= forwardedop2.asSInt),
-        branchType.ltu  -> (forwardedop1 < forwardedop2),
-        branchType.gteu -> (forwardedop1 >= forwardedop2),
-    ))
 
-    io.branchTaken  := io.jump || (io.branch && comparison)
-    io.branchTarget := Mux(io.branch, io.PCout + io.immediate, alu.aluResult)
     io.aluResult    := Mux(io.jump, io.PCout + 4.U, alu.aluResult)
     io.rs2DataOutput := forwardedRs2Data
 }
